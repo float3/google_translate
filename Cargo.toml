@@ -1,7 +1,13 @@
 [package]
 name = "google_translate"
 version = "0.1.0"
+authors = ["float3"]
 edition = "2021"
+repository = "https://github.com/float3/google_translate.git"
+readme = "README.md"
+license = "AGPL-3.0"
+exclude = ["/.travis.yml"]
+description = "Google Translate API library"
 
 [dependencies]
 #phf = { version = "0.11", features = ["macros"] }
