@@ -350,13 +350,32 @@ fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn std::error::Error>> {
 }
 
 fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let err = "unexpected json structure";
+
     let outerjson: Value = serde_json::from_str(json)?;
-    let innerjson: Value =
-        serde_json::from_str(outerjson[0][2].as_str().ok_or("as_str() failed")?)?;
+    let innerjson: Value = serde_json::from_str(
+        outerjson
+            .get(0)
+            .ok_or(err)?
+            .get(2)
+            .ok_or(err)?
+            .as_str()
+            .ok_or("as_str() failed")?,
+    )?;
     let mut translations: Vec<String> = vec![];
-    let innermost_json: &Value = innerjson[1][0][0][5][0]
+    let innermost_json: &Value = innerjson //I'm sorry
+        .get(1)
+        .ok_or(err)?
+        .get(0)
+        .ok_or(err)?
+        .get(0)
+        .ok_or(err)?
+        .get(5)
+        .ok_or(err)?
+        .get(0)
+        .ok_or(err)?
         .get(4)
-        .ok_or("unexpected json structure")?;
+        .ok_or(err)?;
     match innermost_json {
         Value::Array(innermost_json) => {
             for node in innermost_json {
