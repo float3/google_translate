@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::string::ToString;
-
 // use phf::phf_map;
 use reqwest::{blocking::Response, header::HeaderMap};
 use serde_json::Value;
@@ -320,7 +318,7 @@ fn package_rpc(text: &str, source_language: LanguageCode, target_language: Langu
     )
 }
 
-fn web_request(bytes: Vec<u8>) -> Option<Response> {
+fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
     let mut headers: HeaderMap = HeaderMap::new();
     headers.insert(
@@ -341,24 +339,24 @@ fn web_request(bytes: Vec<u8>) -> Option<Response> {
     );
     headers.insert(
         reqwest::header::CONTENT_LENGTH,
-        reqwest::header::HeaderValue::from_str(bytes.len().to_string().as_str()).ok()?,
+        reqwest::header::HeaderValue::from_str(bytes.len().to_string().as_str())?,
     );
     let response: Response = client
         .post(GOOGLETRANSLATEURL)
         .headers(headers)
         .body(bytes)
-        .send()
-        .ok()?;
-    Some(response)
+        .send()?;
+    Result::Ok(response)
 }
 
-fn parse_json(response: Response) -> Option<Vec<String>> {
-    let json_lit = response.text().ok()?;
-    let json_lit2 = json_lit.split('\n').last()?;
-    let outerjson: Value = serde_json::from_str(json_lit2).ok()?;
-    let innerjson: Value = serde_json::from_str(outerjson[0][2].as_str()?).ok()?;
+fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let outerjson: Value = serde_json::from_str(json)?;
+    let innerjson: Value =
+        serde_json::from_str(outerjson[0][2].as_str().ok_or("as_str() failed")?)?;
     let mut translations: Vec<String> = vec![];
-    let innermost_json: &Value = innerjson[1][0][0][5][0].get(4)?;
+    let innermost_json: &Value = innerjson[1][0][0][5][0]
+        .get(4)
+        .ok_or("unexpected json structure")?;
     match innermost_json {
         Value::Array(innermost_json) => {
             for node in innermost_json {
@@ -370,7 +368,7 @@ fn parse_json(response: Response) -> Option<Vec<String>> {
         }
         _ => println!("other"),
     }
-    Some(translations)
+    Result::Ok(translations)
 }
 
 // text has to between in the range of [1,5000]
@@ -378,36 +376,21 @@ pub fn translate(
     text: &str,
     source_language: LanguageCode,
     target_language: LanguageCode,
-) -> Option<Vec<String>> {
+) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     if text.is_empty() {
-        return None;
+        return Result::Err("text is empty".into());
     };
     if text.len() > 5000 {
-        return None;
+        return Result::Err("text can not be longer than 5000 characters".into());
     };
     let bytes = package_rpc(text, source_language, target_language).into_bytes();
     let response = web_request(bytes)?;
-    let translations = parse_json(response)?;
+    let response_text = response.text()?;
+    let json = response_text.split('\n').last().ok_or("no last")?;
+    let translations = parse_json(json)?;
 
-    Some(translations)
+    Result::Ok(translations)
 }
 
 #[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        println!("Translating \"test\" into german:");
-        let text = "test";
-        let source_language = super::LanguageCode::de;
-        let target_language = super::LanguageCode::en;
-        let result = super::translate(text, source_language, target_language);
-        match result {
-            Some(result) => {
-                for res in result {
-                    println!("{}", res)
-                }
-            }
-            None => println!("failed"),
-        }
-    }
-}
+mod tests;
