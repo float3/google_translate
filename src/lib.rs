@@ -320,23 +320,8 @@ fn package_rpc(text: &str, source_language: LanguageCode, target_language: Langu
     )
 }
 
-// text has to between in the range of [1,5000]
-pub fn translate(
-    text: &str,
-    source_language: LanguageCode,
-    target_language: LanguageCode,
-) -> Option<Vec<String>> {
-    if text.is_empty() {
-        return None;
-    };
-    if text.len() > 5000 {
-        return None;
-    };
-
-    let bytes = package_rpc(text, source_language, target_language).into_bytes();
-
+fn web_request(bytes: Vec<u8>) -> Option<Response> {
     let client = reqwest::blocking::Client::new();
-
     let mut headers: HeaderMap = HeaderMap::new();
     headers.insert(
         reqwest::header::REFERER,
@@ -358,33 +343,22 @@ pub fn translate(
         reqwest::header::CONTENT_LENGTH,
         reqwest::header::HeaderValue::from_str(bytes.len().to_string().as_str()).ok()?,
     );
-
     let response: Response = client
         .post(GOOGLETRANSLATEURL)
         .headers(headers)
         .body(bytes)
         .send()
         .ok()?;
+    Some(response)
+}
 
-    // example response
-    // )]}'
-    // [["wrb.fr","MkEWBc","[[null,null,null,[[[0,[[[null,11]],[true]]]],11],[[\"Hello World\",null,null,11]]],[[[null,null,null,true,null,[[\"Hallo Welt\",null,null,null,[[\"Hallo Welt\",[2,5],[]]]]]]],\"de\",1,\"en\",[\"Hello World\",\"en\",\"de\",true]],\"en\"]",null,null,null,"generic"],["di",24],["af.httprm",23,"5824192319104021461",28]]
-
+fn parse_json(response: Response) -> Option<Vec<String>> {
     let json_lit = response.text().ok()?;
     let json_lit2 = json_lit.split('\n').last()?;
-
     let outerjson: Value = serde_json::from_str(json_lit2).ok()?;
-
     let innerjson: Value = serde_json::from_str(outerjson[0][2].as_str()?).ok()?;
-
     let mut translations: Vec<String> = vec![];
-
-    // first
-    //translations.push(innerjson[1][0][0][5][0][0].to_string());
-
     let innermost_json: &Value = innerjson[1][0][0][5][0].get(4)?;
-
-    // rest
     match innermost_json {
         Value::Array(innermost_json) => {
             for node in innermost_json {
@@ -396,6 +370,24 @@ pub fn translate(
         }
         _ => println!("other"),
     }
+    Some(translations)
+}
+
+// text has to between in the range of [1,5000]
+pub fn translate(
+    text: &str,
+    source_language: LanguageCode,
+    target_language: LanguageCode,
+) -> Option<Vec<String>> {
+    if text.is_empty() {
+        return None;
+    };
+    if text.len() > 5000 {
+        return None;
+    };
+    let bytes = package_rpc(text, source_language, target_language).into_bytes();
+    let response = web_request(bytes)?;
+    let translations = parse_json(response)?;
 
     Some(translations)
 }
