@@ -33,8 +33,8 @@ fn package_rpc(text: &str, source_language: LanguageCode, target_language: Langu
                 "[[[\"{}\",\"[[\\\"{}\\\",\\\"{}\\\",\\\"{}\\\",true],[1]]\",null,\"generic\"]]]",
                 GOOGLETTSRPC,
                 text,
-                source_language.as_str().to_string(),
-                target_language.as_str().to_string(),
+                source_language.iso_639().to_string(),
+                target_language.iso_639().to_string(),
             )
             .as_str(),
         )
