@@ -33,6 +33,6 @@ fn it_works() {
 #[test]
 fn enum_to_string() {
     let lang = super::lang::LanguageCode::zh_CN;
-    let lang_str = lang.iso_639().to_string();
+    let lang_str = lang.iso_639();
     assert_eq!(lang_str, "zh-CN");
 }

@@ -25,7 +25,11 @@ const GOOGLETRANSLATEURL: &str =
     "https://translate.google.com/_/TranslateWebserverUi/data/batchexecute";
 
 // https://kovatch.medium.com/deciphering-google-batchexecute-74991e4e446c
-fn package_rpc(text: &str, source_language: LanguageCode, target_language: LanguageCode) -> String {
+fn package_rpc(
+    text: &str,
+    source_language: LanguageCode,
+    target_language: LanguageCode,
+) -> Vec<u8> {
     format!(
         "f.req={}&",
         encode(
@@ -33,12 +37,13 @@ fn package_rpc(text: &str, source_language: LanguageCode, target_language: Langu
                 "[[[\"{}\",\"[[\\\"{}\\\",\\\"{}\\\",\\\"{}\\\",true],[1]]\",null,\"generic\"]]]",
                 GOOGLETTSRPC,
                 text,
-                source_language.iso_639().to_string(),
-                target_language.iso_639().to_string(),
+                source_language.iso_639(),
+                target_language.iso_639(),
             )
             .as_str(),
         )
     )
+    .into_bytes()
 }
 
 fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn std::error::Error>> {
@@ -109,7 +114,7 @@ pub fn translate(
     if text.len() > 5000 {
         return Result::Err("text can not be longer than 5000 characters".into());
     };
-    let bytes = package_rpc(text, source_language, target_language).into_bytes();
+    let bytes = package_rpc(text, source_language, target_language);
     let response = web_request(bytes)?;
     let response_text = response.text()?;
     let json = response_text.split('\n').last().ok_or("no last")?;
