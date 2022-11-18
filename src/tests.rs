@@ -29,3 +29,10 @@ fn it_works() {
         _ => println!("failed"),
     }
 }
+
+#[test]
+fn enum_to_string() {
+    let lang = super::lang::LanguageCode::zh_CN;
+    let lang_str = lang.as_str().to_string();
+    assert_eq!(lang_str, "zh-CN");
+}

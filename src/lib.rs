@@ -14,7 +14,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use lang::LanguageCode;
-// use phf::phf_map;
 use reqwest::{blocking::Response, header::HeaderMap};
 use serde_json::Value;
 use urlencoding::encode;
@@ -34,8 +33,8 @@ fn package_rpc(text: &str, source_language: LanguageCode, target_language: Langu
                 "[[[\"{}\",\"[[\\\"{}\\\",\\\"{}\\\",\\\"{}\\\",true],[1]]\",null,\"generic\"]]]",
                 GOOGLETTSRPC,
                 text,
-                source_language.to_string().replace('_', "-"),
-                target_language.to_string().replace('_', "-")
+                source_language.as_str().to_string(),
+                target_language.as_str().to_string(),
             )
             .as_str(),
         )
