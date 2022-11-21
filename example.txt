@@ -1,0 +1,4 @@
+)]}'
+
+[["wrb.fr","MkEWBc","[[\"Tést\",[null,[\"en\"]],null,[[[0,[[[null,4]],[true]]]],4],[[\"test\",null,null,4]]],[[[null,null,null,null,null,[
+[\"test\",null,null,null,[[\"test\",[3,5],[]],[\"testing\",[11],[]]]]],\"de\"]],\"en\",1,\"de\",[\"test\",\"de\",\"en\",true]],\"en\",[\"Test\",[[[\"noun\",[[\"[wissenschaftlicher oder technischer] Versuch zur Feststellung bestimmter Eigenschaften, Leistungen o. Ä.\",\"ein wissenschaftlicher, klinischer, psychologischer Test\",true]],null,1]],1],[[[null,\"einen \\u003cb\\u003eTest\\u003c/b\\u003e aus-, erarbeiten\"],[null,\"ein wissenschaftlicher, klinischer, psychologischer \\u003cb\\u003eTest\\u003c/b\\u003e\"]],null,2],null,null,[[[\"noun\",[[\"test\",null,[\"Test\",\"Prüfung\",\"Probe\",\"Versuch\",\"Untersuchung\",\"Kriterium\"],1,true]],\"en\",\"de\"]],1],null,null,\"de\",1]]",null,null,null,"generic"],["di",24],["af.httprm",23,"-7392469519428120461",28]]
