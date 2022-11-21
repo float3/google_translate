@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::error::Error;
+
 use lang::LanguageCode;
 use reqwest::{blocking::Response, header::HeaderMap};
 use serde_json::Value;
@@ -46,7 +48,7 @@ fn package_rpc(
     .into_bytes()
 }
 
-fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn std::error::Error>> {
+fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn Error>> {
     let client = reqwest::blocking::Client::new();
     let mut headers: HeaderMap = HeaderMap::new();
     headers.insert(
@@ -77,7 +79,7 @@ fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn std::error::Error>> {
     Result::Ok(response)
 }
 
-fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let mut translations: Vec<String> = vec![];
     let err = "unexpected json structure";
     let outerjson: Value = serde_json::from_str(json)?;
@@ -102,12 +104,19 @@ fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     Result::Ok(translations)
 }
 
-// text has to between in the range of [1,5000]
-pub fn translate(
+struct TranslationsResult {
+    translation: String,
+    synonyms_source_language: Vec<String>,
+    synonyms_target_language: Vec<String>,
+    detected_source_langauge: LanguageCode,
+    detected_target_language: LanguageCode,
+}
+
+fn get_response(
     text: &str,
     source_language: LanguageCode,
     target_language: LanguageCode,
-) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn Error>> {
     if text.is_empty() {
         return Result::Err("text is empty".into());
     };
@@ -117,8 +126,22 @@ pub fn translate(
     let bytes = package_rpc(text, source_language, target_language);
     let response = web_request(bytes)?;
     let response_text = response.text()?;
-    let json = response_text.split('\n').last().ok_or("no last")?;
-    let translations = parse_json(json)?;
+    let json = response_text
+        .split('\n')
+        .last()
+        .ok_or("no last")?
+        .to_string();
+    Result::Ok(json)
+}
+
+// text has to between in the range of [1,5000]
+pub fn translate(
+    text: &str,
+    source_language: LanguageCode,
+    target_language: LanguageCode,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let json = get_response(text, source_language, target_language)?;
+    let translations = parse_json(json.as_str())?;
 
     Result::Ok(translations)
 }
