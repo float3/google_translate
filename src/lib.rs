@@ -104,6 +104,7 @@ fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn Error>> {
     Result::Ok(translations)
 }
 
+#[allow(dead_code)]
 struct TranslationsResult {
     translation: String,
     synonyms_source_language: Vec<String>,

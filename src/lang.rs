@@ -16,7 +16,7 @@
 // all languages listed in view-source:https://translate.google.com as of 2022-11-15
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 pub enum LanguageCode {
     #[default]
     auto,
