@@ -15,12 +15,12 @@
 
 use std::error::Error;
 
-use lang::LanguageCode;
+pub use lang::LanguageCode;
 use reqwest::{blocking::Response, header::HeaderMap};
 use serde_json::Value;
 use urlencoding::encode;
 
-mod lang;
+pub mod lang;
 
 const GOOGLETTSRPC: &str = "MkEWBc";
 const GOOGLETRANSLATEURL: &str =
