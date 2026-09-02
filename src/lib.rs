@@ -129,7 +129,7 @@ fn get_response(
     let response_text = response.text()?;
     let json = response_text
         .split('\n')
-        .last()
+        .next_back()
         .ok_or("no last")?
         .to_string();
     Result::Ok(json)
