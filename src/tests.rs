@@ -14,20 +14,38 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #[test]
-fn it_works() {
-    println!("Translating \"test\" into german:");
-    let text = "test";
-    let source_language = super::lang::LanguageCode::de;
-    let target_language = super::lang::LanguageCode::en;
-    let result = super::translate(text, source_language, target_language);
-    match result {
-        Result::Ok(result) => {
-            for res in result {
-                println!("{}", res)
-            }
-        }
-        _ => println!("failed"),
-    }
+fn parses_a_single_segment_response() {
+    let json = include_str!("testdata/single_segment.json");
+    let translations = super::parse_json(json).expect("single segment response should parse");
+    assert_eq!(translations, vec!["Good morning".to_string()]);
+}
+
+#[test]
+fn parses_a_multi_segment_response() {
+    let json = include_str!("testdata/multi_segment.json");
+    let translations = super::parse_json(json).expect("multi segment response should parse");
+    assert_eq!(
+        translations,
+        vec!["Hello.".to_string(), "How are you doing?".to_string()]
+    );
+}
+
+#[test]
+fn rejects_a_response_it_does_not_understand() {
+    assert!(super::parse_json(r#"[["wrb.fr","MkEWBc","[[]]",null,null,null,"generic"]]"#).is_err());
+    assert!(super::parse_json("not json at all").is_err());
+}
+
+#[test]
+#[ignore = "talks to translate.google.com"]
+fn translates_over_the_network() {
+    let translations = super::translate(
+        "Guten Morgen",
+        super::lang::LanguageCode::de,
+        super::lang::LanguageCode::en,
+    )
+    .expect("translate should succeed");
+    assert_eq!(translations, vec!["Good morning".to_string()]);
 }
 
 #[test]

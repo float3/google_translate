@@ -80,7 +80,6 @@ fn web_request(bytes: Vec<u8>) -> Result<Response, Box<dyn Error>> {
 }
 
 fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let mut translations: Vec<String> = vec![];
     let err = "unexpected json structure";
     let outerjson: Value = serde_json::from_str(json)?;
     let innerjson: Value = serde_json::from_str(
@@ -89,17 +88,17 @@ fn parse_json(json: &str) -> Result<Vec<String>, Box<dyn Error>> {
             .and_then(|e| e.as_str())
             .ok_or(err)?,
     )?;
-    let innermost_json: Value = innerjson.pointer("/1/0/0/5/0/4").ok_or(err)?.clone();
-    match innermost_json {
-        Value::Array(innermost_json) => {
-            for node in innermost_json {
-                match node.get(0).ok_or(err)? {
-                    Value::String(translation) => translations.push(translation.to_string()),
-                    _ => println!("other"),
-                }
-            }
-        }
-        _ => println!("other"),
+    let segments = innerjson
+        .pointer("/1/0/0/5")
+        .and_then(Value::as_array)
+        .ok_or(err)?;
+    let mut translations: Vec<String> = Vec::with_capacity(segments.len());
+    for segment in segments {
+        let translation = segment.get(0).and_then(Value::as_str).ok_or(err)?;
+        translations.push(translation.to_owned());
+    }
+    if translations.is_empty() {
+        return Result::Err(err.into());
     }
     Result::Ok(translations)
 }
