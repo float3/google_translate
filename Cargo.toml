@@ -1,15 +1,19 @@
 [package]
 name = "google_translate"
-version = "0.1.0"
-authors = ["float3"]
-edition = "2021"
-repository = "https://github.com/float3/google_translate.git"
+version = "0.2.0"
+authors = ["hill <hill@hilll.dev>"]
+edition = "2024"
+rust-version = "1.85"
+repository = "https://github.com/float3/google_translate"
 readme = "README.md"
 license = "AGPL-3.0-only"
-exclude = ["/.travis.yml"]
-description = "Google Translate API library"
+description = "Translate text through Google Translate's web endpoint, no API key needed"
+keywords = ["google", "translate", "translation", "i18n"]
+categories = ["api-bindings", "internationalization"]
 
 [dependencies]
-reqwest = { version = "0.13", features = ["blocking", "charset", "http2", "rustls", "system-proxy"], default-features = false }
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "charset", "form", "http2", "rustls", "system-proxy"] }
 serde_json = "1.0"
-urlencoding = "2.1.2"
+
+[dev-dependencies]
+serde_json = "1.0"
