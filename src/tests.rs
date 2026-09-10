@@ -104,7 +104,6 @@ fn translates_over_the_network() {
     let translation: Translation =
         super::translate("Guten Morgen", Language::Auto, Language::English)
             .expect("translate should succeed");
-    println!("{translation:?}");
     assert_eq!(translation.text, "Good morning");
     assert_eq!(translation.detected_source, Some(Language::German));
 }
