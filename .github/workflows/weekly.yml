@@ -1,0 +1,54 @@
+name: Weekly
+
+# The crate speaks the batchexecute RPC behind translate.google.com, which can
+# change without notice. The test suite only parses recorded responses, so it
+# cannot see that happen; this job translates for real once a week. A red run
+# on an untouched repository means google moved.
+on:
+  schedule:
+    - cron: "47 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  live:
+    name: Translate through the live endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+
+      - name: Translate
+        run: |
+          set -o pipefail
+          text=$(cargo run --quiet -- --from de --to en "guten morgen")
+          printf 'translated to: %s\n' "$text"
+          if [ -z "$text" ]; then
+            echo "::error::the endpoint returned nothing"
+            exit 1
+          fi
+
+      - name: Detect the source language
+        run: |
+          set -o pipefail
+          text=$(cargo run --quiet -- --to en "bonjour le monde")
+          printf 'translated to: %s\n' "$text"
+          if [ -z "$text" ]; then
+            echo "::error::the endpoint returned nothing for a detected source"
+            exit 1
+          fi
