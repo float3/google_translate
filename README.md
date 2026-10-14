@@ -1,8 +1,8 @@
 # google_translate
 
-Rust client for the unofficial Google Translate web endpoint. Blocking, no API key, 249 languages.
+rust client for the unofficial Google Translate web endpoint. blocking, no API key, 249 languages.
 
-## Library
+## library
 
 ```toml
 [dependencies]
@@ -18,7 +18,7 @@ assert_eq!(result.text, "Good morning. How are you doing?");
 assert_eq!(result.detected_source, Some(Language::German));
 ```
 
-`Language` parses from and prints as Google's codes (`"zh-CN".parse::<Language>()`). Requests are capped at 5000 characters.
+`Language` parses from and prints as Google's codes (`"zh-CN".parse::<Language>()`). requests are capped at 5000 characters.
 
 ## CLI
 
@@ -29,7 +29,7 @@ google_translate --from de --to en Guten Morgen
 google_translate --languages
 ```
 
-## Development
+## development
 
 ```sh
 cargo test
